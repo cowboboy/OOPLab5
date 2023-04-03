@@ -5,6 +5,7 @@ public:
     Motor() {
         printf("Motor()\n");
     }
+    virtual void work() = 0;
     ~Motor() {
         printf("~Motor()\n");
     }
@@ -16,6 +17,15 @@ private:
 public:
     ElectricMotor() {
         printf("ElectricMotor()\n");
+    }
+    void work() override {
+
+    }
+    int getCapacity() {
+        return electricMotorCapacity;
+    }
+    void changeCapacity(int value) {
+        electricMotorCapacity = value;
     }
     ~ElectricMotor() {
         printf("~ElectricMotor()\n");
@@ -36,6 +46,9 @@ public:
     }
     virtual bool isInstance(std::string example) {
         return example == "Transport";
+    }
+    virtual Motor* getMotor() {
+        return motor;
     }
     virtual void drive() = 0;
     virtual ~Transport() {
@@ -105,9 +118,50 @@ public:
     bool isInstance(std::string example) override {
         return example == "ElectricCar" || Transport::isInstance(example);
     }
+    int getElectricMotorCapacity() {
+        ElectricMotor* electricMotor = dynamic_cast<ElectricMotor*>(motor);
+        if (electricMotor != nullptr) {
+            return electricMotor->getCapacity();
+        }
+    }
     ~ElectricCar() {
         printf("~ElectricCar()\n");
         delete motor;
+    }
+};
+
+class TestParent {
+public:
+    TestParent() {
+        printf("TestParent()\n");
+    }
+    void method1() {
+        this->method2();
+    }
+    virtual void method2() {
+        printf("TestParent::method2()\n");
+    }
+    void method3() {
+        printf("TestParent::method3()\n");
+    }
+    ~TestParent() {
+        printf("~TestParent()\n");
+    }
+};
+
+class TestChild : public TestParent {
+public:
+    TestChild() {
+        printf("TestChild()\n");
+    }
+    void method2() {
+        printf("TestChild::method2()\n");
+    }
+    void method3() {
+        printf("TestChild::method3()\n");
+    }
+    ~TestChild() {
+        printf("~TestChild()\n");
     }
 };
 
@@ -131,6 +185,7 @@ int main()
         switch (choise) {
         case 0:
             transports[i] = new ElectricCar();
+            static_cast<ElectricMotor*>(transports[i]->getMotor())->changeCapacity(rand() % 10);
             break;
         case 1:
             transports[i] = new SidecarMotocycle();
@@ -147,9 +202,14 @@ int main()
         }
         else if (transports[i]->isInstance("ElectricCar")) {
             printf("Instance of ElectricCar\n");
+            printf("Capacity of electric motor: %d\n", static_cast<ElectricCar*>(transports[i])->getElectricMotorCapacity());
         }
         else if (transports[i]->isInstance("Truck")) {
             printf("Instance of Truck\n");
         }
     }
+
+    printf("----------\n");
+    TestChild testChild;
+    testChild.method1();
 }
